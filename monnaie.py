@@ -1,4 +1,4 @@
-def decompositions_entier(n, max_val=None):
+def decompositions_entier_système(n, max_val=None):
     if max_val is None:
         max_val = n
     if n == 0:
@@ -8,15 +8,19 @@ def decompositions_entier(n, max_val=None):
 
     decompositions = []
     for i in range(1, min(max_val, n) + 1):
-        sub_decompositions = decompositions_entier(n - i, i)
+        sub_decompositions = decompositions_entier_système(n - i, i)
         for sub_decomposition in sub_decompositions:
-            decompositions.append([i] + sub_decomposition)
+            decomposition = [i] + sub_decomposition
+            # Vérification pour filtrer les décompositions
+            if all(x in [1, 4, 5] for x in decomposition):
+                decompositions.append(decomposition)
 
     return decompositions
 
 
-# Exemple avec n = 6
+# Exemple avec n = 6 et s = [1, 4, 5]
 n = 6
-resultats = decompositions_entier(n)
+s = [1, 4, 5]
+resultats = decompositions_entier_système(n)
 for resultat in resultats:
     print(f"{n} :", "+".join(map(str, resultat)))
