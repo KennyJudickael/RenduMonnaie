@@ -1,26 +1,37 @@
-def decompositions_entier_système(n, max_val=None):
-    if max_val is None:
-        max_val = n
-    if n == 0:
-        return [[]]
-    if n < 0 or max_val == 0:
-        return []
+def decompositions_entier_système(n, système):
+    # Créer une table pour stocker les décompositions possibles jusqu'à un montant donné
+    table = [None] * (n + 1)
+    table[0] = []
 
-    decompositions = []
-    for i in range(1, min(max_val, n) + 1):
-        sub_decompositions = decompositions_entier_système(n - i, i)
-        for sub_decomposition in sub_decompositions:
-            decomposition = [i] + sub_decomposition
-            # Vérification pour filtrer les décompositions
-            if all(x in [1, 4, 5] for x in decomposition):
-                decompositions.append(decomposition)
+    for montant in range(1, n + 1):
+        for valeur in système:
+            if montant >= valeur and table[montant - valeur] is not None:
+                nouvelle_décomposition = table[montant - valeur] + [valeur]
+                if table[montant] is None or len(nouvelle_décomposition) < len(
+                    table[montant]
+                ):
+                    table[montant] = nouvelle_décomposition
 
-    return decompositions
+    return table[n]
 
 
-# Exemple avec n = 6 et s = [1, 4, 5]
-n = 6
-s = [1, 4, 5]
-resultats = decompositions_entier_système(n)
-for resultat in resultats:
-    print(f"{n} :", "+".join(map(str, resultat)))
+# Exemple avec n = 5300 et système [100, 200, 500, 1000]
+n = 5800
+système = [100, 200, 500, 1000, 2000]
+resultat = decompositions_entier_système(n, système)
+
+if resultat is not None:
+    # Compter la quantité de chaque pièce de monnaie dans le résultat
+    pièces_quantité = {}
+    for valeur in système:
+        pièces_quantité[valeur] = resultat.count(valeur)
+
+    print("Système de rendu de monnaie adéquat :", pièces_quantité)
+else:
+    print(
+        "Impossible de rendre",
+        n,
+        "avec le système",
+        système,
+        "pour un rendu de monnaie adéquat.",
+    )
