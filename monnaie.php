@@ -1,30 +1,50 @@
-function decomposerEntier($n) {
-    // Créer un tableau associatif pour stocker les décompositions
-    $decomposition = array();
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Rendu de Monnaie</title>
+</head>
+<body>
 
-    // Décomposer n
-    while ($n > 0) {
-        // Trouver la plus grande puissance de 10 qui est inférieure ou égale à n
-        $puissanceDe10 = 1;
-        while ($puissanceDe10 * 10 <= $n) {
-            $puissanceDe10 *= 10;
+<?php
+function decompositions_entier_système($n, $système) {
+    $table = array_fill(0, $n + 1, null);
+    $table[0] = array();
+
+    for ($montant = 1; $montant <= $n; $montant++) {
+        foreach ($système as $valeur) {
+            if ($montant >= $valeur && $table[$montant - $valeur] !== null) {
+                $nouvelle_décomposition = array_merge($table[$montant - $valeur], array($valeur));
+                if ($table[$montant] === null || count($nouvelle_décomposition) < count($table[$montant])) {
+                    $table[$montant] = $nouvelle_décomposition;
+                }
+            }
         }
-
-        // Calculer le chiffre le plus significatif
-        $chiffre = (int)($n / $puissanceDe10);
-
-        // Mettre à jour la décomposition
-        $decomposition[$puissanceDe10] = $chiffre;
-
-        // Mettre à jour le montant restant
-        $n -= $chiffre * $puissanceDe10;
     }
 
-    return $decomposition;
+    return $table[$n];
 }
 
-// Exemple avec n = 12345
-$n = 12345;
-$resultat = decomposerEntier($n);
-echo "Décomposition de $n : ";
-print_r($resultat)
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $montant = isset($_POST["montant"]) ? intval($_POST["montant"]) : 0;
+    $système = isset($_POST["système"]) ? json_decode($_POST["système"]) : array();
+
+    $resultat = decompositions_entier_système($montant, $système);
+
+    if ($resultat !== null) {
+        $pièces_quantité = array_count_values($resultat);
+        echo "Système de rendu de monnaie adéquat : " . json_encode($pièces_quantité) . "<br>";
+    } else {
+        echo "Impossible de rendre $montant avec le système " . json_encode($système) . " pour un rendu de monnaie adéquat.<br>";
+    }
+}
+?>
+
+<form method="post">
+    Montant à rendre : <input type="number" name="montant" required><br>
+    Système de pièces de monnaie (au format JSON) : <input type="text" name="système" required><br>
+    Exemple : [100, 200, 500, 1000]<br>
+    <input type="submit" value="Calculer">
+</form>
+
+</body>
+</html>
